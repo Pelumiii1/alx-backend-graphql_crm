@@ -1,5 +1,5 @@
 from gql import gql, Client
-from gql.transport.aiohttp import AIOHTTPTransport
+from gql.transport.requests import RequestsHTTPTransport
 from datetime import datetime
 import logging
 
@@ -11,13 +11,13 @@ logging.basicConfig(
     filemode='a'
 )
 
-async def log_crm_heartbeat():
+def log_crm_heartbeat():
     # Log heartbeat message with timestamp
     timestamp = datetime.now().strftime('%d/%m/%Y-%H:%M:%S')
     logging.info(f'{timestamp} CRM is alive')
 
-    # Set up GraphQL client
-    transport = AIOHTTPTransport(url='http://localhost:8000/graphql')
+    # Set up GraphQL client with RequestsHTTPTransport
+    transport = RequestsHTTPTransport(url='http://localhost:8000/graphql', use_prepared_statements=True)
     client = Client(transport=transport, fetch_schema_from_transport=True)
 
     # Define GraphQL query for hello field
@@ -29,6 +29,6 @@ async def log_crm_heartbeat():
 
     try:
         # Execute query to verify GraphQL endpoint
-        await client.execute_async(query)
+        client.execute(query)
     except Exception as e:
         logging.error(f'GraphQL endpoint error: {str(e)}')
